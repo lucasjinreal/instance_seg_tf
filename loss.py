@@ -101,7 +101,6 @@ def discriminative_loss(prediction, correct_label, feature_dim, image_shape,
         out_var = out_var.write(i, l_var)
         out_dist = out_dist.write(i, l_dist)
         out_reg = out_reg.write(i, l_reg)
-
         return label, batch, out_loss, out_var, out_dist, out_reg, i + 1
 
     # TensorArray is a data structure that support dynamic writing

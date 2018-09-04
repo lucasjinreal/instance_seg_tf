@@ -39,7 +39,7 @@ def run():
     parser.add_argument('--epochs', type=int, default=50, help="Number of epochs")
     parser.add_argument('--var', type=float, default=1., help="Weight of variance loss")
     parser.add_argument('--dist', type=float, default=1., help="Weight of distance loss")
-    parser.add_argument('--reg', type=float, default=0.001, help="Weight of regularization loss")
+    parser.add_argument('--reg', type=float, default=0.01, help="Weight of regularization loss")
     parser.add_argument('--dvar', type=float, default=0.5, help="Cutoff variance")
     parser.add_argument('--ddist', type=float, default=1.5, help="Cutoff distance")
 
@@ -73,15 +73,15 @@ def run():
     debug_clustering = True
     bandwidth = 0.7
     cluster_cycle = 5000
-    eval_cycle = 1000
+    eval_cycle = 100
     save_cycle = 15000
 
     # Hyperparameters
     epochs = args.epochs
     batch_size = 1
-    starter_learning_rate = 1e-4
-    learning_rate_decay_rate = 0.96
-    learning_rate_decay_interval = 5000
+    starter_learning_rate = 1e-5
+    learning_rate_decay_rate = 0.86
+    learning_rate_decay_interval = 2500
 
     feature_dim = 3
     param_var = args.var

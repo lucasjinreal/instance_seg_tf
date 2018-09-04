@@ -62,9 +62,10 @@ def get_validation_batch(image_shape, batch_size=10):
     images_batch = np.random.choice(images, batch_size)
     labels_batch = np.random.choice(labels, batch_size)
 
+    print('Validation images: {}, labels: {}'.format(len(images_batch), len(labels_batch)))
     images = []
     gt_images = []
-    for image_file, gt_image_file in zip(images, labels):
+    for image_file, gt_image_file in zip(images_batch, labels_batch):
         image = cv2.resize(cv2.imread(image_file), image_shape, interpolation=cv2.INTER_LINEAR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         # image = (image.astype(np.float32)-mean)/std
