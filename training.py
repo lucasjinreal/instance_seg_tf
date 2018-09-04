@@ -24,6 +24,7 @@ from loss import discriminative_loss
 import datagenerator as datagenerator
 import visualization as visualization
 import clustering as clustering
+from datagenerator import get_cityscapes_f_paths
 
 
 def run():
@@ -53,17 +54,12 @@ def run():
 
     image_shape = (512, 512)
     # data_dir = args.srcdir #os.path.join('.', 'data')
-    data_dir = '/media/jintian/sg/permanent/datasets/minieye/minieye_lane/lane_20180308_1700'
     val_data_dir = '/media/jintian/sg/permanent/datasets/minieye/minieye_lane/lane_20180323_300'
     model_dir = args.modeldir
     output_dir = args.outdir
     log_dir = args.logdir
 
-    image_paths = glob(os.path.join(data_dir, 'images', '*.jpg'))
-    label_paths = glob(os.path.join(data_dir, 'masks', '*.png'))
-
-    image_paths.sort()
-    label_paths.sort()
+    image_paths, label_paths = get_cityscapes_f_paths('/media/jintian/netac/permenant/Cityscape', 'train')
 
     image_paths_s = image_paths[0:10]
     print(image_paths_s)
@@ -74,14 +70,14 @@ def run():
     print(('Number of train samples', len(y_train)))
     print(('Number of valid samples', len(y_valid)))
 
-    ### Debugging
+    # Debugging
     debug_clustering = True
     bandwidth = 0.7
     cluster_cycle = 5000
     eval_cycle = 1000
     save_cycle = 15000
 
-    ### Hyperparameters
+    # Hyperparameters
     epochs = args.epochs
     batch_size = 1
     starter_learning_rate = 1e-4
@@ -104,12 +100,12 @@ def run():
         os.makedirs(os.path.join(log_dir, param_string))
 
     config = tf.ConfigProto()
-    # config.gpu_options.allow_growth = True
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.5
+    config.gpu_options.allow_growth = True
+    config.gpu_options.per_process_gpu_memory_fraction = 0.5
 
     with tf.Session(config=config) as sess:
 
-        ### Build network
+        # Build network
         input_image = tf.placeholder(tf.float32, shape=(None, image_shape[1], image_shape[0], 3))
         correct_label = tf.placeholder(dtype=tf.float32, shape=(None, image_shape[1], image_shape[0]))
 
@@ -117,17 +113,17 @@ def run():
         prediction = utils.add_transfer_layers_and_initialize(sess, last_prelu, feature_dim)
 
         print(('Number of parameters in the model', utils.count_parameters()))
-        ### Set up learning rate decay
+        # Set up learning rate decay
         global_step = tf.Variable(0, trainable=False)
         sess.run(global_step.initializer)
         learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
                                                    learning_rate_decay_interval, learning_rate_decay_rate,
                                                    staircase=True)
 
-        ### Set variables to train
+        # Set variables to train
         trainables = utils.get_trainable_variables_and_initialize(sess, debug=False)
 
-        ### Optimization operations
+        # Optimization operations
         disc_loss, l_var, l_dist, l_reg = discriminative_loss(prediction, correct_label, feature_dim, image_shape,
                                                               delta_v, delta_d, param_var, param_dist, param_reg)
         with tf.name_scope('Instance/Adam'):
@@ -136,31 +132,31 @@ def run():
         adam_initializers = [var.initializer for var in tf.global_variables() if 'Adam' in var.name]
         sess.run(adam_initializers)
 
-        ### Collect summaries
+        # Collect summaries
         summary_op_train, summary_op_valid = utils.collect_summaries(disc_loss, l_var, l_dist, l_reg, input_image,
                                                                      prediction, correct_label)
 
         train_writer = tf.summary.FileWriter(log_dir)
 
-        ### Check if image and labels match
-        valid_image_chosen, valid_label_chosen = datagenerator.get_validation_batch(val_data_dir, image_shape)
-        print((valid_image_chosen.shape))
+        # Check if image and labels match
+        valid_image_chosen, valid_label_chosen = datagenerator.get_validation_batch(image_shape, batch_size=1)
+        print(valid_image_chosen.shape)
         # visualization.save_image_overlay(valid_image_chosen.copy(), valid_label_chosen.copy())
 
-        ### Training pipeline
+        # Training pipeline
         saver = tf.train.Saver()
         step_train = 0
         step_valid = 0
         for epoch in range(epochs):
-            print(('epoch', epoch))
+            print('epoch', epoch)
 
             train_loss = 0
             for image, label in datagenerator.get_batches_fn(batch_size, image_shape, X_train, y_train):
 
                 lr = sess.run(learning_rate)
 
-                if (step_train % eval_cycle != 0):
-                    ### Training
+                if step_train % eval_cycle != 0 or step_train == 0:
+                    # Training
                     _, step_prediction, step_loss, step_l_var, step_l_dist, step_l_reg = sess.run([
                         train_op,
                         prediction,
@@ -191,7 +187,7 @@ def run():
                                                         param_string, step_train)
 
                     # Perform mean-shift clustering on prediction
-                    if (step_train % cluster_cycle == 0):
+                    if step_train % cluster_cycle == 0:
                         if debug_clustering:
                             instance_masks = clustering.get_instance_masks(valid_pred, bandwidth)
                             for img_id, mask in enumerate(instance_masks):
@@ -201,7 +197,7 @@ def run():
 
                 step_train += 1
 
-                ### Save intermediate model
+                # Save intermediate model
                 if (step_train % save_cycle == (save_cycle - 1)):
                     try:
                         print('Saving model ...')
@@ -209,10 +205,12 @@ def run():
                     except:
                         print('FAILED saving model')
                 # print 'gradient', step_gradient
-                print(('step', step_train, '\tloss', step_loss, '\tl_var', step_l_var, '\tl_dist', step_l_dist,
-                       '\tl_reg', step_l_reg, '\tcurrent lr', lr))
+                # print(('step', step_train, '\tloss', step_loss, '\tl_var', step_l_var, '\tl_dist', step_l_dist,
+                #        '\tl_reg', step_l_reg, '\tcurrent lr', lr))
+                print('step: {}, loss: {}, l_var: {}, l_dist: {}, l_reg: {},'
+                      'current_lr: {}'.format(step_train, step_loss, step_l_var, step_l_dist, step_l_reg, lr))
 
-            ### Regular validation
+            # Regular validation
             print('Evaluating current model ...')
             for image, label in datagenerator.get_batches_fn(batch_size, image_shape, X_valid, y_valid):
                 if step_valid % 100 == 0:

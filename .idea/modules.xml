@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/instance-segmentation-with-discriminative-loss-tensorflow.iml" filepath="$PROJECT_DIR$/.idea/instance-segmentation-with-discriminative-loss-tensorflow.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/instance_seg_tf.iml" filepath="$PROJECT_DIR$/.idea/instance_seg_tf.iml" />
     </modules>
   </component>
 </project>

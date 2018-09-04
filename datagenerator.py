@@ -58,17 +58,14 @@ def get_batches_fn(batch_size, image_shape, image_paths, label_paths):
         yield np.array(images), np.array(gt_images)
 
 
-def get_validation_batch(data_dir, image_shape):
-    valid_image_paths = glob(os.path.join(data_dir, 'images', '*.jpg'))
-    valid_label_paths = glob(os.path.join(data_dir, 'masks', '*.png'))
-
-    #
-    # valid_image_paths = [os.path.join(data_dir,'images','0000.png')]
-    # valid_label_paths = [os.path.join(data_dir,'labels','0000.png')]
+def get_validation_batch(image_shape, batch_size=10):
+    images, labels = get_cityscapes_f_paths('/media/jintian/netac/permenant/Cityscape', 'val')
+    images_batch = np.random.choice(images, batch_size)
+    labels_batch = np.random.choice(labels, batch_size)
 
     images = []
     gt_images = []
-    for image_file, gt_image_file in zip(valid_image_paths, valid_label_paths):
+    for image_file, gt_image_file in zip(images, labels):
 
         image = cv2.resize(cv2.imread(image_file), image_shape, interpolation=cv2.INTER_LINEAR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -82,6 +79,23 @@ def get_validation_batch(data_dir, image_shape):
 
     return np.array(images), np.array(gt_images)
 
+
+def get_cityscapes_f_paths(cityscapes_dir, phase='train'):
+    phase = phase.lower()
+    assert phase in ['train', 'val', 'test'], 'phase must in train val or test'
+    # get all images and mask label file path
+    labels_path = glob(os.path.join(cityscapes_dir, 'gtFine', phase, '*/*_gtFine_instanceIds.png'))
+    images_path = glob(os.path.join(cityscapes_dir, 'leftImg8bit', phase, '*/*.png'))
+
+    labels_path = sorted(labels_path)
+    images_path = sorted(images_path)
+    if len(labels_path) != len(images_path):
+        print('images and labels are not equal there must be something wrong. {} vs {}'.format(
+            len(images_path), len(labels_path)
+        ))
+        exit(0)
+    else:
+        return images_path, labels_path
 
 
 if __name__=="__main__":
