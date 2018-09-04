@@ -54,12 +54,11 @@ def run():
 
     image_shape = (512, 512)
     # data_dir = args.srcdir #os.path.join('.', 'data')
-    val_data_dir = '/media/jintian/sg/permanent/datasets/minieye/minieye_lane/lane_20180323_300'
     model_dir = args.modeldir
     output_dir = args.outdir
     log_dir = args.logdir
 
-    image_paths, label_paths = get_cityscapes_f_paths('/media/jintian/netac/permenant/Cityscape', 'train')
+    image_paths, label_paths = get_cityscapes_f_paths('/media/jintian/sg/permanent/datasets/Cityscapes', 'train')
 
     image_paths_s = image_paths[0:10]
     print(image_paths_s)
