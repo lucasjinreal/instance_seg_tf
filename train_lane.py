@@ -50,6 +50,8 @@ def run():
         raise IOError('Directory does not exist')
     if not os.path.isdir(args.logdir):
         os.mkdir(args.logdir)
+    if not os.path.exists(args.outdir):
+        os.makedirs(args.outdir)
 
     image_shape = (960, 680)
     # data_dir = args.srcdir #os.path.join('.', 'data')
