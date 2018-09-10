@@ -11,6 +11,7 @@ slim = tf.contrib.slim
 from enet import ENet, ENet_arg_scope
 from clustering import cluster, get_instance_masks, save_instance_masks
 import time
+import glog as log
 
 
 def rebuild_graph(sess, checkpoint_dir, input_image, batch_size, feature_dim):
@@ -53,16 +54,17 @@ def save_image_with_features_as_color(pred):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--modeldir', default='saved_model', help="Directory of trained model")
-    parser.add_argument('-i', '--indir', default=os.path.join('inference_test', 'images'),
+    parser.add_argument('-m', '--modeldir', default='trained_model', help="Directory of trained model")
+    parser.add_argument('-i', '--indir', default='data/test_images',
                         help='Input image directory (jpg format)')
-    parser.add_argument('-o', '--outdir', default=os.path.join('inference_test', 'results'),
+    parser.add_argument('-o', '--outdir', default='log',
                         help='Output directory for inference images')
     args = parser.parse_args()
 
     data_dir = args.indir
     output_dir = args.outdir
     checkpoint_dir = args.modeldir
+    log.info('Load checkpoints from {}'.format(checkpoint_dir))
 
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
@@ -93,6 +95,7 @@ if __name__ == '__main__':
 
             image = cv2.resize(cv2.imread(path), image_shape, interpolation=cv2.INTER_LINEAR)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image_original = cv2.imread(path)
             image = np.expand_dims(image, axis=0)
 
             tic = time.time()
@@ -124,7 +127,12 @@ if __name__ == '__main__':
             instance_mask = cv2.resize(instance_mask, (1280, 720))
             clust_time = time.time() - tic
             cluster_time += clust_time
-            cv2.imwrite(output_file_name, cv2.cvtColor(instance_mask, cv2.COLOR_RGB2BGR))
+
+            res_img = cv2.cvtColor(instance_mask, cv2.COLOR_RGB2BGR)
+            cv2.imshow('res', res_img)
+            cv2.imshow('origin', image_original)
+            cv2.imwrite(output_file_name, res_img)
+            cv2.waitKey(0)
 
         print('Mean inference time:', inference_time / num_images, 'fps:', num_images / inference_time)
         print('Mean cluster time:', cluster_time / num_images, 'fps:', num_images / cluster_time)

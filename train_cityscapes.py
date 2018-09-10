@@ -33,7 +33,7 @@ def run():
     parser.add_argument('-s', '--srcdir', default='data', help="Source directory of TuSimple dataset")
     parser.add_argument('-m', '--modeldir', default='pretrained_semantic_model',
                         help="Output directory of extracted data")
-    parser.add_argument('-o', '--outdir', default='saved_model', help="Directory for trained model")
+    parser.add_argument('-o', '--outdir', default='saved_model/cityscapes', help="Directory for trained model")
     parser.add_argument('-l', '--logdir', default='log', help="Log directory for tensorboard and evaluation files")
     # Hyperparameters
     parser.add_argument('--epochs', type=int, default=50, help="Number of epochs")
@@ -138,7 +138,7 @@ def run():
         train_writer = tf.summary.FileWriter(log_dir)
 
         # Check if image and labels match
-        valid_image_chosen, valid_label_chosen = datagenerator.get_validation_batch(image_shape, batch_size=1)
+        valid_image_chosen, valid_label_chosen = datagenerator.get_validation_batch_cityscapes(image_shape, batch_size=1)
         print(valid_image_chosen.shape)
         # visualization.save_image_overlay(valid_image_chosen.copy(), valid_label_chosen.copy())
 
