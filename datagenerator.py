@@ -130,7 +130,7 @@ def get_lane_f_paths(lane_list_f):
         for l in f.readlines():
             l = l.strip().split(' ')
             image_files.append(l[0])
-            gt_files.append(l[-1])
+            gt_files.append(l[-2])
     log.info('Find {} images, {} gts.'.format(len(image_files), len(gt_files)))
     return image_files, gt_files
 

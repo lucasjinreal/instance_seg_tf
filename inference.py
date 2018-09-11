@@ -54,7 +54,7 @@ def save_image_with_features_as_color(pred):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--modeldir', default='trained_model', help="Directory of trained model")
+    parser.add_argument('-m', '--modeldir', default='saved_model/lane', help="Directory of trained model")
     parser.add_argument('-i', '--indir', default='data/test_images',
                         help='Input image directory (jpg format)')
     parser.add_argument('-o', '--outdir', default='log',
@@ -70,6 +70,7 @@ if __name__ == '__main__':
         os.mkdir(output_dir)
 
     image_paths = glob(os.path.join(data_dir, '*.jpg'))
+    image_paths += glob(os.path.join(data_dir, '*.png'))
     image_paths.sort()
 
     num_images = len(image_paths)
